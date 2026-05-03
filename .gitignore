@@ -37,3 +37,6 @@ logs/
 # Deployment
 .vercel/
 .netlify/
+
+.vercel
+.env*.local
