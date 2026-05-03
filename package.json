@@ -1,0 +1,8 @@
+{
+  "name": "ecoconnect",
+  "version": "1.0.0",
+  "description": "Plastic bottle-based WiFi access system",
+  "scripts": {
+    "start": "echo 'Static site - no build needed'"
+  }
+}
