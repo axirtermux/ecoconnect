@@ -569,8 +569,7 @@ body{font-family:'DM Sans',sans-serif;background:#040c06;display:flex;justify-co
 
       <!-- Aligned buttons -->
       <div class="kiosk-btns">
-        <div class="btn bg" id="start-detect-btn" onclick="startAutoDetection()">🍶 Insert Bottle</div>
-        <div class="btn bo" id="simultaneous-btn" onclick="toggleSimultaneousMode()">🔄 Enable Simultaneous Mode</div>
+        <div class="btn bg" id="insert-btn" onclick="startInsertionMode()">🍶 Insert Bottle</div>
         <div class="btn bo" onclick="timeoutReset()">⏱ Reset Batch</div>
       </div>
 
@@ -1394,44 +1393,57 @@ function attachAdminHold() {
 }
 
 // ── BOTTLE / IR LOGIC ─────────────────────────────────────
+function startInsertionMode() {
+  if (S.toRunning) {
+    // If already running, just insert a bottle
+    insertBottle();
+    return;
+  }
+  // Start 30-second insertion window
+  S.toRemain = 30;
+  S.toRunning = true;
+  setIR('wait');
+  showCD(true);
+  updateCD();
+  $('insert-btn').textContent = '🍶 Insert Bottle';
+  $('insert-btn').style.background = 'var(--g2)';
+  showToast('🍶 30-second insertion window started! Insert bottles rapidly.');
+  addLog('🍶 Insertion mode started', '30-second window active');
+
+  toInt = setInterval(() => {
+    S.toRemain--;
+    updateCD();
+    if (S.toRemain <= 0) {
+      stopTO();
+      timeoutReset();
+    }
+  }, 1000);
+}
+
 function insertBottle() {
-  // In simultaneous mode, don't stop timeout - allow rapid insertion
-  if (!S.simultaneousMode && S.toRunning) stopTO();
+  // Only allow insertion if timer is running
+  if (!S.toRunning) {
+    showToast('⚠️ Click "Insert Bottle" first to start the 30-second window');
+    return;
+  }
+
   S.bottles++; S.batch++;
   updateSlots(); setIR('det');
   addLog(`🍶 Bottle #${S.bottles} detected`, '+1 IR validated');
+
   if (S.batch >= 5) {
     S.batch = 0; S.mins++;
     S.sessRemain += 60;
     updateSlots();
     showToast('🎉 5 bottles = 1 minute WiFi unlocked!');
     startSess(); syncUI();
-    // Only start timeout if not in simultaneous mode
-    if (!S.simultaneousMode) startTO();
   } else {
     syncUI();
-    // Only start timeout if not in simultaneous mode
-    if (!S.simultaneousMode) startTO();
   }
+
   // Send to device if connected
   if (!CFG.simulationMode) {
     fetch(apiUrl('/insert'), { method:'POST', signal: AbortSignal.timeout(2000) }).catch(()=>{});
-  }
-}
-
-function toggleSimultaneousMode() {
-  S.simultaneousMode = !S.simultaneousMode;
-  const btn = $('simultaneous-btn');
-  if (btn) {
-    if (S.simultaneousMode) {
-      btn.textContent = '✅ Simultaneous Mode ON';
-      btn.style.background = 'var(--g2)';
-      showToast('🔄 Simultaneous insertion enabled - Insert bottles rapidly!');
-    } else {
-      btn.textContent = '🔄 Enable Simultaneous Mode';
-      btn.style.background = '';
-      showToast('⏱ Standard mode - 30s timeout per bottle');
-    }
   }
 }
 
@@ -1448,6 +1460,8 @@ function startTO() {
 function stopTO() {
   if (toInt) { clearInterval(toInt); toInt = null; }
   S.toRunning = false; showCD(false);
+  $('insert-btn').textContent = '🍶 Insert Bottle';
+  $('insert-btn').style.background = '';
 }
 
 function timeoutReset() {
