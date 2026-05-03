@@ -1393,22 +1393,34 @@ function attachAdminHold() {
 }
 
 // ── BOTTLE / IR LOGIC ─────────────────────────────────────
+let autoInsertInt = null;
+let totalAutoInserted = 0;
+let targetBottles = 0;
+
 function startInsertionMode() {
   if (S.toRunning) {
-    // If already running, just insert a bottle
-    insertBottle();
+    showToast('⚠️ Insertion already in progress');
     return;
   }
+
+  // Set target bottles (15-20 random)
+  targetBottles = Math.floor(Math.random() * 6) + 15;
+  totalAutoInserted = 0;
+
   // Start 30-second insertion window
   S.toRemain = 30;
   S.toRunning = true;
   setIR('wait');
   showCD(true);
   updateCD();
-  $('insert-btn').textContent = '🍶 Insert Bottle';
+  $('insert-btn').textContent = '🍶 Inserting...';
   $('insert-btn').style.background = 'var(--g2)';
-  showToast('🍶 30-second insertion window started! Insert bottles rapidly.');
-  addLog('🍶 Insertion mode started', '30-second window active');
+  $('insert-btn').disabled = true;
+  showToast(`🍶 Auto-inserting ${targetBottles} bottles over 30 seconds`);
+  addLog('🍶 Auto-insertion started', `Target: ${targetBottles} bottles`);
+
+  // Calculate interval to insert all bottles evenly over 30 seconds
+  const intervalMs = (30 * 1000) / targetBottles;
 
   toInt = setInterval(() => {
     S.toRemain--;
@@ -1418,43 +1430,48 @@ function startInsertionMode() {
       timeoutReset();
     }
   }, 1000);
+
+  // Auto-insert bottles at regular intervals
+  autoInsertInt = setInterval(() => {
+    if (totalAutoInserted >= targetBottles) {
+      clearInterval(autoInsertInt);
+      autoInsertInt = null;
+      return;
+    }
+
+    // Insert one bottle
+    S.bottles++;
+    S.batch++;
+    totalAutoInserted++;
+    updateSlots();
+    setIR('det');
+    addLog(`🍶 Bottle #${S.bottles} auto-detected`, `+1 IR validated (${totalAutoInserted}/${targetBottles})`);
+
+    // Check for complete batch
+    if (S.batch >= 5) {
+      S.batch = 0;
+      S.mins++;
+      S.sessRemain += 60;
+      updateSlots();
+      showToast('🎉 5 bottles = 1 minute WiFi unlocked!');
+      startSess();
+    }
+    syncUI();
+
+    // Send to device if connected
+    if (!CFG.simulationMode) {
+      fetch(apiUrl('/insert'), { method:'POST', signal: AbortSignal.timeout(2000) }).catch(()=>{});
+    }
+  }, intervalMs);
 }
 
 function insertBottle() {
-  // Only allow insertion if timer is running
-  if (!S.toRunning) {
-    showToast('⚠️ Click "Insert Bottle" first to start the 30-second window');
+  // Manual insertion disabled in auto mode
+  if (S.toRunning) {
+    showToast('⚠️ Auto-insertion in progress. Wait for completion.');
     return;
   }
-
-  // Simulate inserting 15-20 bottles at once
-  const bottlesToInsert = Math.floor(Math.random() * 6) + 15; // Random between 15-20
-  const previousBottles = S.bottles;
-  const previousBatch = S.batch;
-
-  S.bottles += bottlesToInsert;
-  S.batch += bottlesToInsert;
-
-  // Calculate how many complete batches of 5 were completed
-  const completedBatches = Math.floor(S.batch / 5);
-  const minutesEarned = completedBatches;
-  S.batch = S.batch % 5; // Remaining bottles in current batch
-  S.mins += minutesEarned;
-  S.sessRemain += (minutesEarned * 60);
-
-  updateSlots(); setIR('det');
-  addLog(`🍶 ${bottlesToInsert} bottles detected`, `+${bottlesToInsert} IR validated`);
-  showToast(`✅ ${bottlesToInsert} bottles inserted! +${minutesEarned} min WiFi`);
-
-  if (minutesEarned > 0) {
-    startSess();
-  }
-  syncUI();
-
-  // Send to device if connected
-  if (!CFG.simulationMode) {
-    fetch(apiUrl('/insert'), { method:'POST', signal: AbortSignal.timeout(2000) }).catch(()=>{});
-  }
+  showToast('⚠️ Click "Insert Bottle" to start auto-insertion');
 }
 
 function startTO() {
@@ -1469,9 +1486,12 @@ function startTO() {
 
 function stopTO() {
   if (toInt) { clearInterval(toInt); toInt = null; }
+  if (autoInsertInt) { clearInterval(autoInsertInt); autoInsertInt = null; }
   S.toRunning = false; showCD(false);
   $('insert-btn').textContent = '🍶 Insert Bottle';
   $('insert-btn').style.background = '';
+  $('insert-btn').disabled = false;
+  totalAutoInserted = 0;
 }
 
 function timeoutReset() {
