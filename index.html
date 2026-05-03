@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>EcoConnect</title>
+<meta name="description" content="Plastic bottle-based WiFi access system for sustainable communities">
+<meta name="theme-color" content="#22c55e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EcoConnect">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --g:#16a34a;--g2:#22c55e;--lime:#84cc16;
+  --bg:#06100a;--card:#0f2416;--bdr:#1a3822;
+  --txt:#d1fae5;--sub:#6ee7b7;--muted:#4d7a5e;
+  --warn:#d97706;--red:#dc2626;--blue:#0ea5e9;--purple:#a78bfa;
+  --r:16px;--r2:12px;--r3:9px;
+}
+body{font-family:'DM Sans',sans-serif;background:#040c06;display:flex;justify-content:center;min-height:100vh;padding:14px;}
+
+/* ── PHONE ── */
+.phone{width:390px;height:844px;background:var(--bg);border-radius:50px;border:2px solid #162e1c;
+  box-shadow:0 50px 140px rgba(0,0,0,.95),0 0 0 1px #0b1e0e,inset 0 1px 0 rgba(255,255,255,.03);
+  position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:124px;height:34px;background:#000;border-radius:0 0 20px 20px;z-index:200;}
+.sbar{height:50px;padding:15px 24px 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:50;}
+.stime{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;color:var(--sub);}
+.sicons{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.sig-dot{width:6px;height:6px;border-radius:50%;background:var(--g2);}
+
+/* ── SCREENS ── */
+.screens{flex:1;position:relative;overflow:hidden;}
+.scr{position:absolute;inset:0;opacity:0;pointer-events:none;overflow-y:auto;overflow-x:hidden;
+  transition:opacity .22s,transform .22s;transform:translateY(6px);}
+.scr::-webkit-scrollbar{display:none;}
+.scr.act{opacity:1;pointer-events:all;transform:translateY(0);}
+
+/* ── BOTTOM NAV ── */
+.bnav{height:78px;background:rgba(6,16,10,.97);border-top:1px solid var(--bdr);
+  backdrop-filter:blur(20px);display:none;align-items:center;
+  justify-content:space-around;padding:0 4px 12px;flex-shrink:0;}
+.bnav.show{display:flex;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+  padding:6px 12px;border-radius:12px;transition:background .18s;position:relative;}
+.ni.on{background:rgba(34,197,94,.1);}
+.nic{font-size:19px;line-height:1;}
+.nil{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.ni.on .nil{color:var(--g2);}
+.rfab{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,var(--g2),var(--g));
+  display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-20px;cursor:pointer;
+  box-shadow:0 0 0 3px rgba(34,197,94,.14),0 5px 18px rgba(22,163,74,.42);transition:transform .13s;}
+.rfab:active{transform:scale(.89);}
+
+/* ── COMMON ── */
+.pad{padding:16px 18px 0;}
+.pad-b{padding-bottom:20px;}
+.rw{display:flex;align-items:center;}
+.bw{justify-content:space-between;}
+.col{flex-direction:column;}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);}
+.st{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--txt);}
+.ss{font-size:10px;color:var(--muted);}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.dv{height:1px;background:var(--bdr);margin:0;}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:99px;font-size:9px;font-weight:700;letter-spacing:.2px;}
+.tg{background:rgba(34,197,94,.12);color:var(--g2);}
+.tl{background:rgba(132,204,22,.12);color:var(--lime);}
+.tw{background:rgba(14,165,233,.12);color:var(--blue);}
+.tr{background:rgba(220,38,38,.12);color:var(--red);}
+.to{background:rgba(217,119,6,.12);color:var(--warn);}
+.tp{background:rgba(167,139,250,.12);color:var(--purple);}
+.pulse-g{animation:glowG 2s ease-in-out infinite;}
+.pulse-o{animation:glowO .8s ease-in-out infinite;}
+
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;
+  border-radius:var(--r2);font-family:'Sora',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;border:none;outline:none;transition:transform .12s,opacity .12s;width:100%;}
+.btn:active{transform:scale(.95);opacity:.88;}
+.bg{background:linear-gradient(135deg,var(--g2),var(--g));color:#fff;box-shadow:0 4px 16px rgba(34,197,94,.25);}
+.bo{background:rgba(255,255,255,.04);color:var(--txt);border:1px solid var(--bdr);}
+.bd{background:rgba(220,38,38,.08);color:var(--red);border:1px solid rgba(220,38,38,.2);}
+.bpu{background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 4px 16px rgba(109,40,217,.25);}
+.btn-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* ── SPLASH ── */
+#s-splash{background:radial-gradient(ellipse at 45% 35%,#0a2e14,var(--bg) 65%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;}
+.sp-ring{width:100px;height:100px;border-radius:50%;
+  background:conic-gradient(var(--g2) 0%,var(--lime) 40%,var(--g) 70%,var(--g2) 100%);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  animation:spin 3s linear infinite;box-shadow:0 0 50px rgba(34,197,94,.28);}
+.sp-ring::before{content:'';position:absolute;inset:8px;border-radius:50%;background:var(--bg);}
+.sp-ic{position:relative;z-index:1;font-size:36px;}
+.sp-t{font-family:'Sora',sans-serif;font-size:25px;font-weight:800;color:var(--txt);letter-spacing:-.5px;}
+.sp-t b{color:var(--g2);}
+.sp-s{font-size:10px;color:var(--muted);text-align:center;max-width:220px;line-height:1.65;}
+.sp-bar{width:130px;height:2px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--lime));animation:ldf 2.6s ease forwards;}
+.sp-chip{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);
+  background:rgba(34,197,94,.06);border:1px solid var(--bdr);border-radius:5px;padding:3px 9px;}
+
+/* ── CONNECT ── */
+#s-connect{background:radial-gradient(ellipse at 50% 15%,#082014,var(--bg) 60%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 20px;gap:0;}
+.conn-icon{font-size:48px;margin-bottom:10px;animation:bob 2.5s ease-in-out infinite;}
+.conn-title{font-family:'Sora',sans-serif;font-size:19px;font-weight:800;color:var(--txt);margin-bottom:5px;text-align:center;}
+.conn-sub{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;margin-bottom:18px;max-width:270px;}
+.conn-box{width:100%;max-width:330px;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:16px;}
+.conn-ssid-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.conn-ssid{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--txt);margin-bottom:10px;}
+.conn-bars{display:flex;gap:3px;align-items:flex-end;height:20px;margin-bottom:12px;}
+.cb{border-radius:3px 3px 0 0;}
+.conn-detail{font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.conn-info{background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.13);
+  border-radius:var(--r3);padding:10px 11px;font-size:10px;color:var(--muted);line-height:1.65;}
+.conn-info b{color:var(--g2);}
+.conn-pulse{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:16px;}
+.cp{width:7px;height:7px;border-radius:50%;background:var(--g2);}
+.cp:nth-child(1){animation:bounce .9s ease-in-out infinite 0s;}
+.cp:nth-child(2){animation:bounce .9s ease-in-out infinite .15s;}
+.cp:nth-child(3){animation:bounce .9s ease-in-out infinite .30s;}
+.conn-actions{width:100%;max-width:330px;display:flex;flex-direction:column;gap:7px;}
+.conn-api-status{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r3);padding:9px 12px;margin-bottom:4px;}
+.api-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(155deg,#0b2e14 0%,#091c0d 52%,var(--bg));
+  padding:13px 18px 18px;position:relative;overflow:hidden;flex-shrink:0;}
+.hero::after{content:'';position:absolute;right:-50px;top:-50px;width:200px;height:200px;
+  border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.07),transparent 65%);pointer-events:none;}
+.hero-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.greet{font-size:9px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+.hname{font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--txt);}
+.ava{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--g2),var(--g));
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  border:2px solid rgba(34,197,94,.2);cursor:pointer;}
+
+/* ── SESSION CARD ── */
+.sess-card{background:linear-gradient(140deg,#163d22,#0d2b17);border:1px solid rgba(34,197,94,.2);
+  border-radius:var(--r);padding:14px;position:relative;overflow:hidden;}
+.sess-card::before{content:'';position:absolute;right:-20px;bottom:-20px;width:110px;height:110px;
+  border-radius:50%;background:rgba(34,197,94,.05);}
+.sess-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.slbl{font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.38);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;}
+.sval{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;color:#fff;line-height:1;}
+.smval{font-family:'Sora',sans-serif;font-size:19px;font-weight:700;color:var(--lime);line-height:1;}
+.schips{display:flex;gap:6px;flex-wrap:wrap;}
+.schip{background:rgba(255,255,255,.1);border-radius:99px;padding:3px 9px;font-size:9px;color:rgba(255,255,255,.75);}
+
+/* ── IR STRIP ── */
+.ir-strip{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);padding:12px 14px;}
+.ir-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:background .3s;}
+.ir-n{font-size:11px;font-weight:600;color:var(--txt);}
+.ir-d{font-size:9px;color:var(--muted);margin-top:1px;}
+.ir-cd{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--warn);}
+
+/* ── SLOTS ── */
+.slots-wrap{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;}
+.slots-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;}
+.slots-row{display:flex;gap:5px;margin-bottom:9px;}
+.slot{flex:1;height:34px;border-radius:8px;border:1.5px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .22s;}
+.slot.on{background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.4);}
+.slot.on span{animation:pop .22s ease;}
+.slots-hint{font-size:9px;color:var(--muted);line-height:1.5;}
+.slots-hint b{color:var(--g2);}
+
+/* ── STAT3 ── */
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.sc{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);padding:11px 7px;text-align:center;}
+.sc-ic{font-size:17px;margin-bottom:3px;}
+.sc-v{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--txt);}
+.sc-l{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:1px;}
+
+/* ── API STATUS BAR ── */
+.api-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,.02);
+  border-bottom:1px solid var(--bdr);}
+.api-ind{width:6px;height:6px;border-radius:50%;}
+.api-txt{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);}
+
+/* ── KIOSK ── */
+.kiosk-hero{padding:14px 18px 18px;background:linear-gradient(155deg,#0c2e12,#091c0d,var(--bg));text-align:center;}
+.kiosk-t{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--txt);margin-bottom:4px;}
+.kiosk-s{font-size:10px;color:var(--muted);line-height:1.65;}
+.sensor-ring{width:140px;height:140px;border-radius:50%;position:relative;
+  display:flex;align-items:center;justify-content:center;margin:14px auto 8px;}
+.sr1{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(34,197,94,.16);animation:rpulse 2.2s ease-in-out infinite;}
+.sr2{position:absolute;inset:14px;border-radius:50%;border:1.5px solid rgba(34,197,94,.09);animation:rpulse 2.2s ease-in-out infinite .5s;}
+.sc-inner{width:94px;height:94px;border-radius:50%;background:linear-gradient(145deg,#163d22,#0d2b17);
+  border:2px solid rgba(34,197,94,.24);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;box-shadow:0 0 28px rgba(34,197,94,.1);}
+.sc-inner.det{border-color:rgba(34,197,94,.55);box-shadow:0 0 45px rgba(34,197,94,.28);}
+.sc-inner.tmo{border-color:rgba(217,119,6,.4);box-shadow:0 0 28px rgba(217,119,6,.16);}
+.sc-emoji{font-size:30px;margin-bottom:2px;}
+.sc-lbl{font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;}
+.cd-outer{width:50px;height:50px;position:relative;margin:2px auto 6px;}
+.cd-svg{transform:rotate(-90deg);position:absolute;inset:0;}
+.cd-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.dep-slots{display:flex;gap:7px;justify-content:center;margin:0 0 8px;}
+.ds{width:44px;height:44px;border-radius:11px;border:2px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .2s;}
+.ds.on{background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.42);animation:pop .2s ease;}
+.kiosk-btns{padding:0 18px;display:flex;flex-direction:column;gap:7px;}
+.reward-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;}
+.reward-row+.reward-row{border-top:1px solid var(--bdr);}
+
+/* ── NETWORK ── */
+.net-hero{padding:14px 18px 18px;background:linear-gradient(155deg,#091822,var(--bg));}
+.speed-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sp-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);padding:12px;}
+.sp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.sp-v{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--txt);}
+.sp-l{font-size:9px;color:var(--muted);margin-top:1px;}
+.mbar{height:3px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden;margin-top:6px;}
+.mf{height:100%;border-radius:99px;transition:width .6s;}
+.ssn-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);
+  padding:10px 13px;display:flex;align-items:center;gap:9px;}
+.ssn-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.don{background:var(--g2);box-shadow:0 0 5px var(--g2);}
+.doff{background:var(--muted);}
+.pi-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;}
+.pi-row+.pi-row{border-top:1px solid var(--bdr);}
+.pi-k{font-size:10px;color:var(--muted);}
+.pi-v{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--txt);font-weight:500;}
+
+/* ── PROFILE ── */
+.prof-hero{background:linear-gradient(155deg,#0a2e14,var(--bg));
+  padding:18px 18px 20px;display:flex;flex-direction:column;align-items:center;gap:9px;}
+.prof-ava{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--g2),var(--g));
+  display:flex;align-items:center;justify-content:center;font-size:30px;
+  border:3px solid rgba(34,197,94,.2);box-shadow:0 0 22px rgba(34,197,94,.15);}
+.prof-name{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--txt);}
+.prof-kpi{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.14);
+  border-radius:var(--r);padding:13px;width:100%;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;}
+.eval-blk{border-radius:var(--r2);padding:12px;margin-bottom:9px;}
+.eval-t{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;margin-bottom:7px;}
+.iso-row{display:flex;gap:7px;margin-bottom:6px;}
+.cq-item{margin-bottom:9px;}
+.cq-q{font-size:10px;color:var(--muted);margin-bottom:4px;line-height:1.5;}
+.cq-btns{display:flex;gap:4px;}
+.cq-btn{flex:1;height:26px;border-radius:6px;border:1.5px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:all .16s;}
+.set-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);
+  padding:12px 13px;display:flex;align-items:center;gap:9px;cursor:pointer;}
+.tog{width:36px;height:20px;border-radius:99px;background:var(--bdr);position:relative;
+  cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--g2);}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;
+  border-radius:50%;background:#fff;transition:transform .18s;}
+.tog.on::after{transform:translateX(16px);}
+
+/* ── ADMIN LOGIN ── */
+#s-adminlogin{background:radial-gradient(ellipse at 50% 15%,#091224,var(--bg) 60%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 18px;}
+.al-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);
+  background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.18);
+  border-radius:5px;padding:3px 11px;margin-bottom:12px;}
+.al-box{background:var(--card);border:1px solid var(--bdr);border-radius:20px;padding:18px;width:100%;max-width:320px;}
+.al-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.al-in{width:100%;background:rgba(255,255,255,.03);border:1.5px solid var(--bdr);border-radius:var(--r3);
+  padding:10px 12px;font-size:13px;color:var(--txt);outline:none;font-family:'DM Sans',sans-serif;
+  margin-bottom:11px;transition:border-color .2s;}
+.al-in:focus{border-color:var(--purple);}
+.al-warn{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.14);
+  border-radius:var(--r3);padding:9px 11px;font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.al-warn b{color:var(--purple);}
+
+/* ── ADMIN DASHBOARD ── */
+#s-admin{background:var(--bg);}
+.admin-bar{padding:12px 18px 14px;background:linear-gradient(155deg,#091224,var(--bg));
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.admin-t{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:var(--txt);}
+.admin-s{font-size:9px;color:var(--muted);margin-top:1px;}
+.admin-lo{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.18);
+  border-radius:8px;padding:6px 11px;font-size:10px;font-weight:700;color:var(--red);cursor:pointer;}
+.kpi4{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.kpi{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:13px;}
+.kpi-ic{font-size:18px;margin-bottom:5px;}
+.kpi-v{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--txt);margin-bottom:1px;}
+.kpi-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
+.kpi-tr{font-size:9px;font-weight:700;margin-top:3px;}
+.kup{color:var(--g2);}
+.chart-w{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:13px;}
+.chart-t{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:var(--txt);margin-bottom:10px;}
+.bars{display:flex;align-items:flex-end;gap:4px;height:56px;margin-bottom:4px;}
+.bar{flex:1;border-radius:3px 3px 0 0;transition:height .5s;}
+.blbls{display:flex;gap:4px;}
+.blbl{flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--muted);}
+.at-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);
+  padding:10px 13px;display:flex;align-items:center;gap:9px;}
+.at-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.at-inf{flex:1;}
+.at-n{font-size:11px;font-weight:600;color:var(--txt);}
+.at-d{font-size:9px;color:var(--muted);margin-top:1px;}
+.at-r{text-align:right;}
+.at-t{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--txt);}
+.at-b{font-size:9px;color:var(--muted);}
+.alert-bx{border-radius:var(--r2);padding:11px 13px;display:flex;gap:9px;align-items:flex-start;}
+.alert-n{font-size:11px;font-weight:700;margin-bottom:2px;}
+.alert-d{font-size:9px;color:var(--muted);line-height:1.5;}
+
+/* ── EXPIRED ── */
+.exp-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:960;
+  flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:28px;}
+.exp-ov.open{display:flex;}
+.exp-ic{font-size:50px;animation:bob 2s ease-in-out infinite;}
+.exp-t{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--txt);}
+.exp-s{font-size:11px;color:var(--muted);line-height:1.7;max-width:260px;}
+
+/* MODAL */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:900;align-items:flex-end;justify-content:center;}
+.moverlay.open{display:flex;}
+.modal{background:#0d2214;border-radius:24px 24px 0 0;padding:18px;width:100%;max-width:390px;border-top:1px solid var(--bdr);}
+.mhandle{width:34px;height:3px;background:var(--bdr);border-radius:99px;margin:0 auto 14px;}
+.m-t{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--txt);margin-bottom:4px;}
+.m-s{font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+
+/* TOAST */
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:#0e2016;border:1px solid var(--g);border-radius:11px;padding:9px 16px;
+  font-size:11px;font-weight:600;color:var(--txt);z-index:1000;opacity:0;
+  transition:all .22s;white-space:nowrap;pointer-events:none;max-width:300px;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── KEYFRAMES ── */
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes ldf{from{width:0}to{width:100%}}
+@keyframes glowG{0%,100%{box-shadow:0 0 6px var(--g2);opacity:.7}50%{box-shadow:0 0 12px var(--g2);opacity:1}}
+@keyframes glowO{0%,100%{box-shadow:0 0 6px var(--warn);opacity:.7}50%{box-shadow:0 0 12px var(--warn);opacity:1}}
+@keyframes rpulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.06);opacity:.9}}
+@keyframes pop{0%{transform:scale(.5)}65%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes bounce{0%,80%,100%{transform:scale(0);opacity:.3}40%{transform:scale(1);opacity:1}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+  <div class="notch"></div>
+  <div class="sbar">
+    <div class="stime" id="clock">09:41</div>
+    <div class="sicons">
+      <span id="wifi-icon">📶</span>
+      <span id="api-status-icon" style="font-size:9px;color:var(--muted);" title="API Status">●</span>
+      <span>🔋</span>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ═══════ SPLASH ═══════ -->
+    <div class="scr act" id="s-splash">
+      <div class="sp-ring"><div class="sp-ic">♻️</div></div>
+      <div class="sp-t">Eco<b>Connect</b></div>
+      <div class="sp-chip">ESP32 · IR Sensor · Captive Portal</div>
+      <div class="sp-s">Plastic Bottle–Based Smart WiFi Access System for Sustainable Community Development</div>
+      <div class="sp-bar"><div class="sp-fill"></div></div>
+    </div>
+
+    <!-- ═══════ AUTO-CONNECT ═══════ -->
+    <div class="scr" id="s-connect">
+      <div class="conn-icon">📡</div>
+      <div class="conn-title">EcoConnect WiFi</div>
+      <div class="conn-sub">You're automatically connected to the community hotspot. Insert PET bottles at the kiosk to earn browsing time.</div>
+
+      <!-- Live API status -->
+      <div class="conn-api-status" style="width:100%;max-width:330px;margin-bottom:12px;">
+        <div class="api-dot" id="conn-api-dot" style="background:var(--warn);animation:glowO 1s infinite;"></div>
+        <div style="flex:1;">
+          <div style="font-size:11px;font-weight:600;color:var(--txt);" id="conn-api-label">Connecting to ESP32...</div>
+          <div style="font-size:9px;color:var(--muted);" id="conn-api-sub">Checking device at <span id="conn-api-url">192.168.4.1</span></div>
+        </div>
+        <div class="tag" id="conn-api-tag" style="background:rgba(217,119,6,.12);color:var(--warn);">Connecting</div>
+      </div>
+
+      <div class="conn-box">
+        <div class="conn-ssid-lbl">Network</div>
+        <div class="conn-ssid" id="conn-ssid">EcoConnect_Hub_01</div>
+        <div class="conn-bars">
+          <div class="cb" style="width:5px;height:7px;background:var(--g2);"></div>
+          <div class="cb" style="width:5px;height:12px;background:var(--g2);"></div>
+          <div class="cb" style="width:5px;height:17px;background:var(--g2);"></div>
+          <div class="cb" style="width:5px;height:21px;background:var(--g2);"></div>
+          <div class="cb" style="width:5px;height:10px;background:rgba(255,255,255,.14);"></div>
+        </div>
+        <div class="conn-detail">
+          Captive Portal · ESP32 MCU · 2.4 GHz<br>
+          Coverage: 10–30 m · IP: <span class="mono" style="font-size:9px;" id="conn-ip">192.168.4.1</span>
+        </div>
+        <div class="conn-info">
+          💡 <b>5 PET bottles = 1 minute</b> of WiFi. Your session ends automatically when time expires. No login needed.
+        </div>
+      </div>
+
+      <div class="conn-pulse">
+        <div class="cp"></div><div class="cp"></div><div class="cp"></div>
+      </div>
+
+      <div class="conn-actions">
+        <div class="btn bg" onclick="enterApp()">✅ Enter EcoConnect</div>
+        <div class="btn bo" style="font-size:11px;padding:9px;" onclick="configAPI()">⚙️ Change Device IP / API Config</div>
+      </div>
+    </div>
+
+    <!-- ═══════ HOME ═══════ -->
+    <div class="scr" id="s-home">
+      <!-- API status bar -->
+      <div class="api-bar">
+        <div class="api-ind" id="api-ind" style="background:var(--g2);"></div>
+        <div class="api-txt" id="api-txt">Connected to ESP32 · Real-time</div>
+        <div class="api-txt" style="margin-left:auto;" id="api-last">–</div>
+      </div>
+
+      <div class="hero">
+        <div class="hero-row">
+          <div><div class="greet">Connected 🌿</div><div class="hname" id="h-ssid">EcoConnect_Hub_01</div></div>
+          <div class="ava" onclick="goTab('profile')">👤</div>
+        </div>
+        <div class="sess-card" id="sessCard">
+          <div class="sess-top">
+            <div>
+              <div class="slbl">Time Remaining</div>
+              <div class="sval" id="sessTime">00:00</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.38);margin-top:2px;" id="sessStatus">Insert bottles to start</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="slbl">Minutes Earned</div>
+              <div class="smval" id="h-mins">0</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.38);margin-top:2px;">this session</div>
+            </div>
+          </div>
+          <div class="schips">
+            <div class="schip" id="h-chip">⚪ Idle</div>
+            <div class="schip" id="h-node-chip">📡 Hub_01</div>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="btn bo" id="pause-resume-btn" style="display:none;padding:10px;font-size:12px;" onclick="togglePauseResume()">⏸ Pause Session</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="rw bw" style="margin-bottom:9px;">
+          <div class="st">IR Sensor Status</div>
+          <div class="tag tg" id="h-ir-tag">Ready</div>
+        </div>
+        <div class="ir-strip">
+          <div class="ir-dot pulse-g" id="h-ir-dot" style="background:var(--g2);"></div>
+          <div style="flex:1;">
+            <div class="ir-n" id="h-ir-n">Awaiting PET bottle</div>
+            <div class="ir-d" id="h-ir-d">Insert a valid PET bottle into the kiosk</div>
+          </div>
+          <div class="ir-cd" id="h-ir-cd" style="display:none;"></div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="rw bw" style="margin-bottom:9px;">
+          <div class="st">Recycle Bin Level</div>
+          <div class="tag" id="h-bin-tag" style="background:rgba(34,197,94,.12);color:var(--g2);">Normal</div>
+        </div>
+        <div class="card" style="padding:12px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="font-size:20px;">🗑️</div>
+            <div style="flex:1;">
+              <div style="font-size:11px;font-weight:600;color:var(--txt);">Ultrasonic Sensor</div>
+              <div style="font-size:9px;color:var(--muted);">Real-time capacity monitoring</div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--g2);" id="h-bin-level">78%</div>
+          </div>
+          <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;">
+            <div id="h-bin-bar" style="height:100%;width:78%;background:linear-gradient(90deg,var(--g2),var(--lime));border-radius:99px;transition:width .5s;"></div>
+          </div>
+          <div style="font-size:9px;color:var(--muted);margin-top:6px;text-align:center;" id="h-bin-msg">Bin capacity: 78% - Space available</div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="rw bw" style="margin-bottom:9px;">
+          <div class="st">Bottle Counter</div>
+          <div class="ss">5 bottles = 1 min</div>
+        </div>
+        <div class="slots-wrap">
+          <div class="slots-hdr">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--lime);" id="h-batch">0 <span style="font-size:11px;color:var(--muted);font-weight:400;">/ 5</span></div>
+              <div style="font-size:9px;color:var(--muted);margin-top:1px;">current batch</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--g2);" id="h-total-bot">0</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:1px;">bottles total</div>
+            </div>
+          </div>
+          <div class="slots-row" id="h-slots">
+            <div class="slot" id="hs0"><span>○</span></div>
+            <div class="slot" id="hs1"><span>○</span></div>
+            <div class="slot" id="hs2"><span>○</span></div>
+            <div class="slot" id="hs3"><span>○</span></div>
+            <div class="slot" id="hs4"><span>○</span></div>
+          </div>
+          <div class="slots-hint"><b>30-second window</b> per bottle · Resets on timeout</div>
+        </div>
+      </div>
+
+      <div class="pad pad-b">
+        <div class="st" style="margin-bottom:9px;">Your Stats</div>
+        <div class="stat3">
+          <div class="sc"><div class="sc-ic">🍶</div><div class="sc-v" id="h-s-bot">0</div><div class="sc-l">Bottles</div></div>
+          <div class="sc"><div class="sc-ic">⏱</div><div class="sc-v" id="h-s-min">0</div><div class="sc-l">Min Earned</div></div>
+          <div class="sc"><div class="sc-ic">🌍</div><div class="sc-v" id="h-s-co2">0.0</div><div class="sc-l">kg CO₂</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ KIOSK ═══════ -->
+    <div class="scr" id="s-kiosk">
+      <div class="kiosk-hero">
+        <div class="kiosk-t">♻️ Bottle Kiosk</div>
+        <div class="kiosk-s"><b style="color:var(--g2);">5 PET bottles = 1 minute WiFi</b> · 30-second timeout per insertion</div>
+      </div>
+
+      <!-- Big IR display -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="sensor-ring">
+          <div class="sr1"></div><div class="sr2"></div>
+          <div class="sc-inner" id="k-center">
+            <div class="sc-emoji" id="k-emoji">🍶</div>
+            <div class="sc-lbl" id="k-lbl" style="color:var(--g2);">INSERT BOTTLE</div>
+          </div>
+        </div>
+
+        <div id="k-cd-wrap" style="display:none;">
+          <div class="cd-outer">
+            <svg class="cd-svg" viewBox="0 0 50 50" width="50" height="50">
+              <circle cx="25" cy="25" r="21" stroke="rgba(255,255,255,.06)" stroke-width="4" fill="none"/>
+              <circle id="k-cd-circ" cx="25" cy="25" r="21" stroke="#d97706" stroke-width="4" fill="none"
+                stroke-dasharray="131.9" stroke-dashoffset="0" stroke-linecap="round"/>
+            </svg>
+            <div class="cd-num" id="k-cd-n" style="color:var(--warn);">30</div>
+          </div>
+          <div style="font-size:10px;color:var(--warn);text-align:center;font-weight:600;margin-bottom:6px;" id="k-cd-msg">Insert next bottle within 30s</div>
+        </div>
+
+        <div class="dep-slots" id="k-slots">
+          <div class="ds" id="ks0">○</div><div class="ds" id="ks1">○</div>
+          <div class="ds" id="ks2">○</div><div class="ds" id="ks3">○</div>
+          <div class="ds" id="ks4">○</div>
+        </div>
+        <div style="text-align:center;font-size:10px;color:var(--muted);margin-bottom:12px;">
+          Batch: <span style="color:var(--lime);font-family:'IBM Plex Mono',monospace;font-weight:600;" id="k-bn">0</span>/5 &nbsp;·&nbsp;
+          Earned: <span style="color:var(--g2);font-family:'IBM Plex Mono',monospace;font-weight:600;" id="k-mins">0</span> min
+        </div>
+      </div>
+
+      <!-- Aligned buttons -->
+      <div class="kiosk-btns">
+        <div class="btn bg" id="start-detect-btn" onclick="startAutoDetection()">🍶 Start Bottle Detection</div>
+        <div class="btn bo" id="simultaneous-btn" onclick="toggleSimultaneousMode()">🔄 Enable Simultaneous Mode</div>
+        <div class="btn bo" onclick="timeoutReset()">⏱ Reset Batch</div>
+      </div>
+
+      <!-- Detection status (hidden by default) -->
+      <div id="detect-status" style="display:none;padding:0 18px;text-align:center;margin-top:7px;">
+        <div style="font-size:11px;color:var(--g2);font-weight:600;margin-bottom:4px;" id="detect-msg">🔍 IR Sensor Active - Insert bottles...</div>
+        <div style="font-size:10px;color:var(--muted);" id="detect-progress">Detected: 0/5</div>
+      </div>
+
+      <div class="pad" style="margin-top:14px;">
+        <div class="st" style="margin-bottom:9px;">Reward Table</div>
+        <div class="card" style="padding:0 14px;">
+          <div class="reward-row"><div style="font-size:11px;color:var(--txt);">🍶 5 PET Bottles</div><div class="tag tg">= 1 min WiFi</div></div>
+          <div class="reward-row"><div style="font-size:11px;color:var(--txt);">⏱ 30s No Insertion</div><div class="tag tr">Batch Resets</div></div>
+          <div class="reward-row"><div style="font-size:11px;color:var(--txt);">🚫 Non-PET Material</div><div class="tag tr">IR Rejected</div></div>
+          <div class="reward-row"><div style="font-size:11px;color:var(--txt);">⌛ Session Expired</div><div class="tag to">Insert More</div></div>
+        </div>
+      </div>
+
+      <div class="pad pad-b">
+        <div class="st" style="margin-bottom:9px;">System Limits</div>
+        <div class="card" style="padding:13px;">
+          <div style="font-size:10px;color:var(--muted);line-height:1.7;">
+            📦 <b style="color:var(--txt);">PET Only</b> — Tin, glass, paper rejected by IR<br>
+            📡 <b style="color:var(--txt);">10–30m Range</b> — Stay near the kiosk<br>
+            🌐 <b style="color:var(--txt);">External ISP Required</b> — Fiber or 5G source<br>
+            🗑 <b style="color:var(--txt);">No Internal Sorting</b> — Manual collection needed
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ SESSION / NETWORK ═══════ -->
+    <div class="scr" id="s-network">
+      <div class="net-hero">
+        <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--txt);margin-bottom:1px;">Session & Network</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:14px;">Captive Portal · Auto-expire · Real-time</div>
+        <div class="speed-2">
+          <div class="sp-card">
+            <div class="sp-top"><span style="font-size:14px;">⬇️</span><div class="tag tg" style="font-size:8px;">LIVE</div></div>
+            <div class="sp-v" id="n-dl">– Mbps</div>
+            <div class="sp-l">Download</div>
+            <div class="mbar"><div class="mf" id="n-dlb" style="width:0%;background:var(--g2);"></div></div>
+          </div>
+          <div class="sp-card">
+            <div class="sp-top"><span style="font-size:14px;">⬆️</span><div class="tag tw" style="font-size:8px;">LIVE</div></div>
+            <div class="sp-v" id="n-ul">– Mbps</div>
+            <div class="sp-l">Upload</div>
+            <div class="mbar"><div class="mf" id="n-ulb" style="width:0%;background:var(--blue);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="rw bw" style="margin-bottom:9px;">
+          <div class="st">My Session</div>
+          <div class="tag" id="n-sess-tag" style="background:rgba(100,100,100,.1);color:var(--muted);">Idle</div>
+        </div>
+        <div class="ssn-item">
+          <div class="ssn-dot" id="n-dot" style="background:var(--muted);"></div>
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:600;color:var(--txt);">My Device</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px;">
+              Remaining: <span id="n-rem" style="font-weight:600;color:var(--g2);">00:00</span> ·
+              <span id="n-bot-used">0</span> bottles used
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">Portal Info</div>
+        <div class="card" style="padding:0 14px;">
+          <div class="pi-row"><div class="pi-k">SSID</div><div class="pi-v" id="n-ssid">EcoConnect_Hub_01</div></div>
+          <div class="pi-row"><div class="pi-k">ESP32 IP</div><div class="pi-v" id="n-ip">192.168.4.1</div></div>
+          <div class="pi-row"><div class="pi-k">Controller</div><div class="pi-v">ESP32 MCU</div></div>
+          <div class="pi-row"><div class="pi-k">Auth</div><div class="pi-v">Captive Portal (Auto)</div></div>
+          <div class="pi-row"><div class="pi-k">Session</div><div class="pi-v">Auto-expire</div></div>
+          <div class="pi-row"><div class="pi-k">Sensor</div><div class="pi-v">IR · PET Detection</div></div>
+          <div class="pi-row"><div class="pi-k">Rate</div><div class="pi-v">5 bottles = 1 min</div></div>
+          <div class="pi-row"><div class="pi-k">API Status</div><div class="pi-v" id="n-api-status">Checking...</div></div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">Raw Device Data</div>
+        <div class="card" style="padding:0 14px;" id="raw-data-box">
+          <div class="pi-row"><div class="pi-k">IR Triggered</div><div class="pi-v" id="rd-ir">–</div></div>
+          <div class="pi-row"><div class="pi-k">Bin Count</div><div class="pi-v" id="rd-bin">–</div></div>
+          <div class="pi-row"><div class="pi-k">Session Secs</div><div class="pi-v" id="rd-secs">–</div></div>
+          <div class="pi-row"><div class="pi-k">Batch</div><div class="pi-v" id="rd-batch">–</div></div>
+          <div class="pi-row"><div class="pi-k">Last Ping</div><div class="pi-v" id="rd-ping">–</div></div>
+        </div>
+      </div>
+
+      <div class="pad pad-b">
+        <div class="btn-g2">
+          <div class="btn bg" onclick="pingDevice()">🔄 Ping Device</div>
+          <div class="btn bo" onclick="runSpeedTest()">📊 Speed Test</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ PROFILE ═══════ -->
+    <div class="scr" id="s-profile">
+      <div class="prof-hero">
+        <div class="prof-ava">👤</div>
+        <div class="prof-name">Community User</div>
+        <div style="font-size:10px;color:var(--muted);" id="p-ssid">📍 EcoConnect_Hub_01</div>
+        <div class="prof-kpi">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;color:var(--lime);" id="p-bot">0</div><div style="font-size:9px;color:var(--muted);">Bottles</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;color:var(--g2);" id="p-mins">0</div><div style="font-size:9px;color:var(--muted);">Min Earned</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;color:var(--blue);" id="p-co2">0.0</div><div style="font-size:9px;color:var(--muted);">kg CO₂</div></div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">Activity Log</div>
+        <div id="p-actlog">
+          <div style="font-size:10px;color:var(--muted);text-align:center;padding:14px;">No activity yet. Insert bottles to begin!</div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">📋 Evaluation — ISO 25010 & IBM CSUQ</div>
+        <div class="card" style="padding:13px;">
+          <div class="eval-blk" style="background:rgba(14,165,233,.05);border:1px solid rgba(14,165,233,.13);">
+            <div class="eval-t" style="color:var(--blue);">ISO 25010 — Expert Criteria</div>
+            <div id="iso-list"></div>
+          </div>
+          <div class="eval-blk" style="background:rgba(132,204,22,.05);border:1px solid rgba(132,204,22,.13);margin-bottom:0;">
+            <div class="eval-t" style="color:var(--lime);">IBM CSUQ — End-User Feedback</div>
+            <div id="csuq-items"></div>
+            <div class="btn bg" style="margin-top:10px;font-size:12px;" onclick="submitCSUQ()">📤 Submit Feedback</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">Settings</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="set-item">
+            <div style="font-size:17px;width:28px;">🔔</div>
+            <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--txt);">Session Alerts</div><div style="font-size:9px;color:var(--muted);">Notify when time is low</div></div>
+            <div class="tog on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="set-item" onclick="configAPI()">
+            <div style="font-size:17px;width:28px;">⚙️</div>
+            <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--txt);">Device API Config</div><div style="font-size:9px;color:var(--muted);" id="p-api-url">ESP32 IP: 192.168.4.1</div></div>
+            <div style="color:var(--muted);font-size:12px;">›</div>
+          </div>
+          <div class="set-item" onclick="showAbout()">
+            <div style="font-size:17px;width:28px;">ℹ️</div>
+            <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--txt);">About EcoConnect</div><div style="font-size:9px;color:var(--muted);">v1.0 · ESP32 · ISO 25010</div></div>
+            <div style="color:var(--muted);font-size:12px;">›</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pad pad-b">
+        <div class="btn bd" onclick="endUserSession()">🚪 Disconnect Session</div>
+      </div>
+    </div>
+
+    <!-- ═══════ ADMIN LOGIN ═══════ -->
+    <div class="scr" id="s-adminlogin">
+      <div class="al-badge">🛡️ ADMIN PORTAL — RESTRICTED</div>
+      <div style="font-size:40px;margin-bottom:10px;">🔐</div>
+      <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--txt);margin-bottom:4px;">Admin Sign In</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:20px;text-align:center;max-width:260px;line-height:1.6;">Restricted to authorized EcoConnect administrators only.</div>
+      <div class="al-box">
+        <div class="al-lbl">Admin Username</div>
+        <input class="al-in" id="al-user" placeholder="admin" autocomplete="off">
+        <div class="al-lbl">Admin Password</div>
+        <input class="al-in" id="al-pass" type="password" placeholder="••••••••">
+        <div class="al-warn">⚠️ <b>Restricted area.</b> Unauthorized access attempts are logged.</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div class="btn bpu" onclick="adminLogin()">🛡️ Sign In to Dashboard</div>
+          <div class="btn bo" onclick="backFromAdmin()">← Back to App</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ ADMIN DASHBOARD ═══════ -->
+    <div class="scr" id="s-admin">
+      <div class="admin-bar">
+        <div>
+          <div class="admin-t">🛡️ Admin Dashboard</div>
+          <div class="admin-s" id="ad-last-sync">Syncing...</div>
+        </div>
+        <div class="admin-lo" onclick="adminLogout()">Log Out</div>
+      </div>
+
+      <!-- API ping indicator -->
+      <div class="api-bar" style="background:rgba(109,40,217,.04);border-bottom-color:rgba(109,40,217,.15);">
+        <div class="api-ind" id="admin-api-ind" style="background:var(--warn);"></div>
+        <div class="api-txt" id="admin-api-txt">Connecting to ESP32...</div>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <div class="btn bo" style="padding:4px 10px;font-size:9px;width:auto;" onclick="adminFetchAll()">↻ Refresh</div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">System Overview</div>
+        <div class="kpi4">
+          <div class="kpi"><div class="kpi-ic">🍶</div><div class="kpi-v" id="ad-bot">–</div><div class="kpi-l">Bottles Collected</div><div class="kpi-tr kup" id="ad-bot-tr">Live</div></div>
+          <div class="kpi"><div class="kpi-ic">⏱</div><div class="kpi-v" id="ad-mins">–</div><div class="kpi-l">WiFi Min Issued</div><div class="kpi-tr kup" id="ad-min-tr">Live</div></div>
+          <div class="kpi"><div class="kpi-ic">👥</div><div class="kpi-v" id="ad-users">–</div><div class="kpi-l">Active Sessions</div><div class="kpi-tr kup">Real-time</div></div>
+          <div class="kpi"><div class="kpi-ic">🌍</div><div class="kpi-v" id="ad-co2">–</div><div class="kpi-l">kg CO₂ Offset</div><div class="kpi-tr kup" id="ad-co2-tr">Live</div></div>
+        </div>
+      </div>
+
+      <!-- Live sensor feed -->
+      <div class="pad">
+        <div class="rw bw" style="margin-bottom:9px;">
+          <div class="st">Live Sensor Feed</div>
+          <div class="tag tp" id="ad-feed-tag">Polling</div>
+        </div>
+        <div class="card" style="padding:0 14px;">
+          <div class="pi-row"><div class="pi-k">IR Sensor State</div><div class="pi-v" id="ad-ir-state">–</div></div>
+          <div class="pi-row"><div class="pi-k">Current Batch</div><div class="pi-v" id="ad-batch">–</div></div>
+          <div class="pi-row"><div class="pi-k">Bin Level</div><div class="pi-v" id="ad-bin">–</div></div>
+          <div class="pi-row"><div class="pi-k">Active Session Secs</div><div class="pi-v" id="ad-secs">–</div></div>
+          <div class="pi-row"><div class="pi-k">ESP32 Uptime</div><div class="pi-v" id="ad-uptime">–</div></div>
+          <div class="pi-row"><div class="pi-k">Free Heap</div><div class="pi-v" id="ad-heap">–</div></div>
+        </div>
+      </div>
+
+      <!-- Weekly bottle chart -->
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">Weekly Bottle Collection</div>
+        <div class="chart-w">
+          <div class="bars" id="ad-bars"></div>
+          <div class="blbls" id="ad-lbls"></div>
+        </div>
+      </div>
+
+      <!-- WiFi usage chart -->
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">Daily WiFi Usage (minutes)</div>
+        <div class="chart-w">
+          <div class="bars" id="ad-wbars"></div>
+          <div class="blbls" id="ad-wlbls"></div>
+        </div>
+      </div>
+
+      <!-- Session log -->
+      <div class="pad">
+        <div class="rw bw" style="margin-bottom:9px;">
+          <div class="st">Session Log</div>
+          <div class="ss" style="color:var(--g2);cursor:pointer;" onclick="exportCSV()">⬇ Export CSV</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;" id="ad-sessions"></div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="pad">
+        <div class="st" style="margin-bottom:9px;">System Alerts</div>
+        <div style="display:flex;flex-direction:column;gap:7px;" id="ad-alerts"></div>
+      </div>
+
+      <!-- Controls -->
+      <div class="pad pad-b">
+        <div class="st" style="margin-bottom:9px;">Admin Controls</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div class="btn-g2">
+            <div class="btn bg" onclick="adminFetchAll()">↻ Refresh Data</div>
+            <div class="btn bo" onclick="exportCSV()">📊 Export Report</div>
+          </div>
+          <div class="btn bo" onclick="sendAdminCmd('reset_batch')">🔄 Reset Current Batch</div>
+          <div class="btn bo" onclick="sendAdminCmd('clear_session')">⏹ Clear Active Session</div>
+          <div class="btn bd" onclick="sendAdminCmd('terminate_all')">🚫 Terminate All Sessions</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- USER BOTTOM NAV -->
+  <div class="bnav" id="bnav">
+    <div class="ni on" id="nav-home" onclick="goTab('home')"><div class="nic">🏠</div><div class="nil">Home</div></div>
+    <div class="ni" id="nav-network" onclick="goTab('network')"><div class="nic">📡</div><div class="nil">Session</div></div>
+    <div class="ni" id="nav-kiosk" onclick="goTab('kiosk')"><div class="nic">♻️</div><div class="nil">Kiosk</div></div>
+    <div class="ni" id="nav-profile" onclick="goTab('profile')"><div class="nic">👤</div><div class="nil">Profile</div></div>
+  </div>
+</div>
+
+<!-- SESSION EXPIRED -->
+<div class="exp-ov" id="expOv">
+  <div class="exp-ic">⌛</div>
+  <div class="exp-t">Session Expired</div>
+  <div class="exp-s">Your WiFi time ran out. Go to the kiosk and insert more PET bottles to earn more minutes.</div>
+  <div class="btn bg" style="max-width:260px;" onclick="closeExp()">🍶 Insert More Bottles</div>
+  <div class="btn bo" style="max-width:260px;margin-top:4px;" onclick="endUserSession()">🚪 Disconnect</div>
+</div>
+
+<!-- API CONFIG MODAL -->
+<div class="moverlay" id="apiModal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="m-t">⚙️ Device API Configuration</div>
+    <div class="m-s">Set the IP address of your ESP32 device. Default is 192.168.4.1 (when phone is connected to EcoConnect WiFi).</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">ESP32 IP Address</div>
+    <input id="api-ip-input" style="width:100%;background:rgba(255,255,255,.03);border:1.5px solid var(--bdr);border-radius:var(--r3);padding:10px 12px;font-size:13px;color:var(--txt);outline:none;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;" placeholder="192.168.4.1">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">API Port</div>
+    <input id="api-port-input" style="width:100%;background:rgba(255,255,255,.03);border:1.5px solid var(--bdr);border-radius:var(--r3);padding:10px 12px;font-size:13px;color:var(--txt);outline:none;font-family:'IBM Plex Mono',monospace;margin-bottom:12px;" placeholder="80" value="80">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+      📌 <b style="color:var(--txt);">Integration Guide:</b><br>
+      Your ESP32 firmware should expose these endpoints:<br>
+      <span style="color:var(--g2);">GET /status</span> — Returns JSON with sensor state<br>
+      <span style="color:var(--g2);">POST /insert</span> — Simulate bottle insert<br>
+      <span style="color:var(--g2);">POST /admin/cmd</span> — Admin commands<br>
+      <span style="color:var(--g2);">GET /admin/stats</span> — Full statistics
+    </div>
+    <div style="display:flex;gap:7px;">
+      <div class="btn bg" style="flex:1;" onclick="saveAPIConfig()">💾 Save & Connect</div>
+      <div class="btn bo" style="flex:1;" onclick="closeApiModal()">Cancel</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div class="moverlay" id="aboutModal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="m-t">About EcoConnect v1.0</div>
+    <div class="m-s">
+      Automated WiFi kiosk exchanging plastic bottles for internet access.<br><br>
+      <b style="color:var(--g2);">Hardware:</b> ESP32 MCU · IR Sensors · Smart Bin<br>
+      <b style="color:var(--g2);">Logic:</b> 5 PET bottles = 1 min · 30s window<br>
+      <b style="color:var(--g2);">API:</b> REST over HTTP · Real-time polling<br>
+      <b style="color:var(--g2);">Evaluation:</b> ISO 25010 · IBM CSUQ<br><br>
+      <span style="color:var(--muted);">Long-press About to access Admin Portal.</span>
+    </div>
+    <div class="btn bo" onclick="document.getElementById('aboutModal').classList.remove('open')">Close</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ECOCONNECT — PRODUCTION READY APP
+   ─────────────────────────────────────────────────────────
+   INTEGRATION GUIDE:
+   Replace API_BASE with your ESP32's IP on the same WiFi.
+   ESP32 firmware must expose:
+     GET  /status       → { ir, batch, bottles, sessRemain, binLevel, uptime, heap, ssid }
+     POST /insert       → trigger bottle insert (for testing)
+     POST /admin/cmd    → body: { cmd: "reset_batch"|"clear_session"|"terminate_all" }
+     GET  /admin/stats  → { totalBottles, totalMins, activeSessions, dailyData, weeklyData, sessionLog }
+   ═══════════════════════════════════════════════════════════ */
+
+// ── CONFIG ────────────────────────────────────────────────
+const CFG = {
+  apiBase: localStorage.getItem('eco_api_base') || 'http://192.168.4.1',
+  apiPort: localStorage.getItem('eco_api_port') || '80',
+  pollInterval: 3000,   // ms — real-time polling interval
+  adminUser: 'admin',
+  adminPass: 'eco2024',
+  simulationMode: true  // set false when real device is connected
+};
+
+// ── STATE ─────────────────────────────────────────────────
+const S = {
+  // User session
+  bottles: 0, batch: 0, mins: 0,
+  sessRemain: 0, sessActive: false,
+  toRemain: 30, toRunning: false,
+  log: [], deviceOnline: false,
+  autoDetectionMode: false,  // Auto-detection mode flag
+  sessionPaused: false,      // Session pause/resume state
+  // Bin monitoring
+  binLevel: 78,              // Ultrasonic sensor reading (0-100%)
+  binAlertShown: false,      // Track if alert was shown
+  simultaneousMode: false,   // Allow simultaneous bottle insertion
+  // Admin
+  adminLoggedIn: false,
+  totalBottles: 0, totalMins: 0,
+  weeklyData: [42,78,95,61,110,88,120],
+  wifiData: [8,14,18,12,22,17,24],
+  sessionLog: [
+    { name:'Device_B4F2', status:'ended', mins:4, bots:20, ago:'12m ago' },
+    { name:'maria_santos', status:'ended', mins:8, bots:40, ago:'1h ago' }
+  ]
+};
+
+let sessInt=null, toInt=null, pollInt=null, toastTO, holdTimer, autoDetectInt;
+const $ = id => document.getElementById(id);
+const setText = (id,v) => { const e=$(id); if(e) e.innerHTML=v; };
+
+// ── INIT ──────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  clockTick(); setInterval(clockTick, 10000);
+  buildISO(); buildCSUQ();
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => console.log('Service Worker registered', reg))
+      .catch((err) => console.log('Service Worker registration failed', err));
+  }
+  // Splash → auto-connect
+  setTimeout(() => {
+    showScr('connect');
+    probeDevice();
+  }, 2700);
+  // Admin long-press hook (attach after DOM ready)
+  attachAdminHold();
+});
+
+// ── CLOCK ─────────────────────────────────────────────────
+function clockTick() {
+  const n = new Date();
+  setText('clock', n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0'));
+}
+
+// ══════════════════════════════════════════════════════════
+// DEVICE API — REAL ESP32 INTEGRATION
+// Replace simulation blocks with real fetch() calls
+// ══════════════════════════════════════════════════════════
+
+function apiUrl(path) {
+  return `${CFG.apiBase}:${CFG.apiPort}${path}`;
+}
+
+// Probe device on connect screen
+async function probeDevice() {
+  if (CFG.simulationMode) {
+    simulateDeviceOnline();
+    return;
+  }
+  try {
+    const res = await fetch(apiUrl('/status'), { signal: AbortSignal.timeout(3000) });
+    if (res.ok) {
+      const data = await res.json();
+      onDeviceOnline(data);
+    } else { onDeviceOffline(); }
+  } catch(e) { onDeviceOffline(); }
+}
+
+function simulateDeviceOnline() {
+  setTimeout(() => {
+    onDeviceOnline({
+      ir: 'idle', batch: 0, bottles: 0,
+      sessRemain: 0, binLevel: 78,
+      uptime: '00:00:00', heap: '180KB', ssid: 'EcoConnect_Hub_01'
+    });
+  }, 1400);
+}
+
+function onDeviceOnline(data) {
+  S.deviceOnline = true;
+  // Update connect screen
+  $('conn-api-dot').style.background = 'var(--g2)';
+  $('conn-api-dot').style.animation = 'glowG 2s infinite';
+  $('conn-api-label').textContent = 'ESP32 Device Found!';
+  $('conn-api-sub').textContent = 'SSID: ' + (data.ssid || CFG.apiBase);
+  $('conn-api-tag').textContent = 'Online';
+  $('conn-api-tag').className = 'tag tg';
+  $('api-status-icon').style.color = 'var(--g2)';
+  if(data.ssid) { setText('conn-ssid', data.ssid); setText('h-ssid', data.ssid); }
+}
+
+function onDeviceOffline() {
+  S.deviceOnline = false;
+  $('conn-api-dot').style.background = 'var(--red)';
+  $('conn-api-dot').style.animation = '';
+  $('conn-api-label').textContent = 'Device not reachable';
+  $('conn-api-sub').textContent = 'Check ESP32 is powered and WiFi is connected';
+  $('conn-api-tag').textContent = 'Offline';
+  $('conn-api-tag').className = 'tag tr';
+  $('api-status-icon').style.color = 'var(--red)';
+}
+
+// Poll device status (called every CFG.pollInterval ms)
+async function pollDevice() {
+  if (CFG.simulationMode) { updateSimulatedRawData(); return; }
+  try {
+    const res = await fetch(apiUrl('/status'), { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    applyDeviceStatus(data);
+    setAPIStatus(true);
+  } catch(e) { setAPIStatus(false); }
+}
+
+function applyDeviceStatus(data) {
+  // data fields: { ir, batch, bottles, sessRemain, binLevel, uptime, heap }
+  if (data.batch !== undefined)      { S.batch = data.batch; updateSlots(); }
+  if (data.bottles !== undefined)    { S.bottles = data.bottles; }
+  if (data.sessRemain !== undefined) {
+    S.sessRemain = data.sessRemain;
+    if (S.sessRemain > 0 && !S.sessActive) startSessFromDevice();
+    updateSessUI();
+  }
+  if (data.binLevel !== undefined) {
+    S.binLevel = data.binLevel;
+    updateBinLevel();
+  }
+  // Update raw data panel
+  setText('rd-ir', data.ir || '–');
+  setText('rd-bin', (data.binLevel || S.binLevel) + '%');
+  setText('rd-secs', data.sessRemain || '–');
+  setText('rd-batch', data.batch + '/5');
+  setText('rd-ping', new Date().toLocaleTimeString());
+  syncUI();
+}
+
+function updateSimulatedRawData() {
+  setText('rd-ir', S.toRunning ? 'waiting' : 'idle');
+  setText('rd-bin', S.binLevel + '%');
+  setText('rd-secs', S.sessRemain);
+  setText('rd-batch', S.batch + '/5');
+  setText('rd-ping', new Date().toLocaleTimeString());
+  updateBinLevel();
+}
+
+// ── BIN LEVEL MONITORING ─────────────────────────────────────
+function updateBinLevel() {
+  const level = S.binLevel;
+  const bar = $('h-bin-bar');
+  const tag = $('h-bin-tag');
+  const msg = $('h-bin-msg');
+  const levelTxt = $('h-bin-level');
+
+  if (levelTxt) levelTxt.textContent = level + '%';
+  if (bar) bar.style.width = level + '%';
+
+  let color, status, bgColor;
+  if (level >= 90) {
+    color = 'var(--red)';
+    status = 'Critical';
+    bgColor = 'rgba(220,38,38,.12)';
+    if (bar) bar.style.background = 'var(--red)';
+    if (!S.binAlertShown) {
+      showBinAlert();
+      S.binAlertShown = true;
+    }
+  } else if (level >= 75) {
+    color = 'var(--warn)';
+    status = 'Warning';
+    bgColor = 'rgba(217,119,6,.12)';
+    if (bar) bar.style.background = 'var(--warn)';
+    S.binAlertShown = false;
+  } else {
+    color = 'var(--g2)';
+    status = 'Normal';
+    bgColor = 'rgba(34,197,94,.12)';
+    if (bar) bar.style.background = 'linear-gradient(90deg,var(--g2),var(--lime))';
+    S.binAlertShown = false;
+  }
+
+  if (tag) {
+    tag.textContent = status;
+    tag.style.background = bgColor;
+    tag.style.color = color;
+  }
+
+  if (msg) {
+    if (level >= 90) {
+      msg.textContent = '⚠️ CRITICAL: Bin nearly full! Please empty immediately.';
+      msg.style.color = 'var(--red)';
+    } else if (level >= 75) {
+      msg.textContent = '⚠️ Warning: Bin at ' + level + '% capacity';
+      msg.style.color = 'var(--warn)';
+    } else {
+      msg.textContent = 'Bin capacity: ' + level + '% - Space available';
+      msg.style.color = 'var(--muted)';
+    }
+  }
+}
+
+function showBinAlert() {
+  Swal.fire({
+    icon: 'warning',
+    title: '🗑️ Recycle Bin Full!',
+    text: 'The recycle bin has reached ' + S.binLevel + '% capacity. Please empty the bin to continue collecting bottles.',
+    background: '#0f2416',
+    color: '#d1fae5',
+    confirmButtonColor: '#22c55e',
+    confirmButtonText: 'Acknowledge',
+    customClass: {
+      popup: 'dark-swal'
+    }
+  });
+}
+
+function setAPIStatus(online) {
+  S.deviceOnline = online;
+  const ind = $('api-ind'), txt = $('api-txt'), last = $('api-last'), nst = $('n-api-status');
+  const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  if (online) {
+    if(ind) { ind.style.background = 'var(--g2)'; }
+    if(txt) txt.textContent = 'Connected to ESP32 · Real-time';
+    if(nst) nst.textContent = '✅ Online';
+    $('api-status-icon').style.color = 'var(--g2)';
+  } else {
+    if(ind) { ind.style.background = 'var(--red)'; }
+    if(txt) txt.textContent = 'ESP32 offline — simulation mode';
+    if(nst) nst.textContent = '❌ Offline';
+    $('api-status-icon').style.color = 'var(--red)';
+  }
+  if(last) last.textContent = now;
+}
+
+async function pingDevice() {
+  showToast('🔄 Pinging ESP32...');
+  if (CFG.simulationMode) {
+    setTimeout(() => { showToast('✅ Ping OK (simulation)'); setAPIStatus(true); }, 600);
+    return;
+  }
+  await pollDevice();
+  showToast(S.deviceOnline ? '✅ Device online!' : '❌ Device not reachable');
+}
+
+async function runSpeedTest() {
+  showToast('📊 Running speed test...');
+  // Simulate speed fluctuation
+  let step = 0;
+  const t = setInterval(() => {
+    const dl = (15 + Math.random()*18).toFixed(1);
+    const ul = (4 + Math.random()*9).toFixed(1);
+    setText('n-dl', dl + ' Mbps');
+    setText('n-ul', ul + ' Mbps');
+    const db = $('n-dlb'); if(db) db.style.width = (dl/50*100).toFixed(0)+'%';
+    const ub = $('n-ulb'); if(ub) ub.style.width = (ul/20*100).toFixed(0)+'%';
+    if(++step > 5) { clearInterval(t); showToast(`✅ DL: ${dl} Mbps · UL: ${ul} Mbps`); }
+  }, 400);
+}
+
+// Admin fetch all stats
+async function adminFetchAll() {
+  if (CFG.simulationMode) {
+    adminApplyStats({
+      totalBottles: S.bottles, totalMins: S.mins,
+      activeSessions: S.sessActive ? 1 : 0,
+      co2: (S.bottles * 1.5).toFixed(1),
+      ir: S.toRunning ? 'waiting' : 'idle',
+      batch: S.batch, binLevel: 78,
+      sessRemain: S.sessRemain,
+      uptime: uptimeString(), heap: '180 KB',
+      weeklyData: S.weeklyData, wifiData: S.wifiData
+    });
+    setAdminAPIStatus(true);
+    return;
+  }
+  try {
+    const res = await fetch(apiUrl('/admin/stats'), {
+      headers: { 'X-Admin-Key': CFG.adminPass },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (!res.ok) throw new Error();
+    const d = await res.json();
+    adminApplyStats(d);
+    setAdminAPIStatus(true);
+  } catch(e) { setAdminAPIStatus(false); }
+}
+
+let _uptimeStart = Date.now();
+function uptimeString() {
+  const sec = Math.floor((Date.now() - _uptimeStart) / 1000);
+  const h = Math.floor(sec/3600).toString().padStart(2,'0');
+  const m = Math.floor((sec%3600)/60).toString().padStart(2,'0');
+  const s = (sec%60).toString().padStart(2,'0');
+  return h+':'+m+':'+s;
+}
+
+function adminApplyStats(d) {
+  const co2 = d.co2 || (d.totalBottles * 1.5).toFixed(1);
+  setText('ad-bot', d.totalBottles ?? '–');
+  setText('ad-mins', d.totalMins ?? '–');
+  setText('ad-users', d.activeSessions ?? '–');
+  setText('ad-co2', co2);
+  setText('ad-bot-tr', '↑ ' + (d.totalBottles||0) + ' total');
+  setText('ad-min-tr', '↑ ' + (d.totalMins||0) + ' total');
+  setText('ad-co2-tr', '↑ ' + co2 + ' kg');
+  // Live sensor
+  setText('ad-ir-state', d.ir || '–');
+  setText('ad-batch', (d.batch ?? '–') + '/5');
+  setText('ad-bin', (d.binLevel ?? '–') + (d.binLevel != null ? '%' : ''));
+  setText('ad-secs', d.sessRemain ?? '–');
+  setText('ad-uptime', d.uptime || uptimeString());
+  setText('ad-heap', d.heap || '–');
+  // Charts
+  if (d.weeklyData) { S.weeklyData = d.weeklyData; }
+  if (d.wifiData)   { S.wifiData = d.wifiData; }
+  buildChart('ad-bars','ad-lbls', S.weeklyData, ['M','T','W','T','F','S','S'], 'var(--g2)');
+  buildChart('ad-wbars','ad-wlbls', S.wifiData, ['M','T','W','T','F','S','S'], 'var(--lime)');
+  // Sessions & Alerts
+  renderAdminSessions();
+  renderAlerts(d.binLevel || 78);
+  setText('ad-last-sync', 'Last sync: ' + new Date().toLocaleTimeString());
+}
+
+function setAdminAPIStatus(online) {
+  const ind = $('admin-api-ind'), txt = $('admin-api-txt'), ft = $('ad-feed-tag');
+  if (online) {
+    if(ind) ind.style.background = 'var(--g2)';
+    if(txt) txt.textContent = 'ESP32 connected · Live feed active';
+    if(ft)  { ft.textContent = 'Live'; ft.className = 'tag tg'; }
+  } else {
+    if(ind) ind.style.background = 'var(--red)';
+    if(txt) txt.textContent = 'Device offline — showing cached data';
+    if(ft)  { ft.textContent = 'Offline'; ft.className = 'tag tr'; }
+  }
+}
+
+async function sendAdminCmd(cmd) {
+  const msgs = {
+    reset_batch: '🔄 Batch reset command sent',
+    clear_session: '⏹ Session cleared',
+    terminate_all: '🚫 All sessions terminated'
+  };
+  if (CFG.simulationMode) {
+    if (cmd === 'reset_batch') { timeoutReset(); }
+    if (cmd === 'clear_session' || cmd === 'terminate_all') {
+      stopSess(); S.sessRemain = 0; S.sessActive = false; updateSessUI(); syncUI();
+    }
+    showToast(msgs[cmd] || '✅ Command sent');
+    adminFetchAll();
+    return;
+  }
+  try {
+    await fetch(apiUrl('/admin/cmd'), {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-Admin-Key': CFG.adminPass },
+      body: JSON.stringify({ cmd }),
+      signal: AbortSignal.timeout(2000)
+    });
+    showToast(msgs[cmd] || '✅ Done');
+    setTimeout(adminFetchAll, 500);
+  } catch(e) { showToast('❌ Command failed — check connection'); }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────
+function showScr(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('act'));
+  const el = $('s-' + id); if (el) el.classList.add('act');
+}
+
+function goTab(id) {
+  showScr(id);
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
+  const nav = $('nav-' + id); if (nav) nav.classList.add('on');
+}
+
+function enterApp() {
+  $('bnav').classList.add('show');
+  goTab('home');
+  showToast('✅ Connected to EcoConnect');
+  // Start polling
+  pollDevice();
+  pollInt = setInterval(pollDevice, CFG.pollInterval);
+  liveSpeed();
+  setAPIStatus(CFG.simulationMode || S.deviceOnline);
+}
+
+function endUserSession() {
+  stopSess(); stopTO();
+  if (pollInt) { clearInterval(pollInt); pollInt = null; }
+  S.sessActive = false; S.sessRemain = 0;
+  $('expOv').classList.remove('open');
+  $('bnav').classList.remove('show');
+  showScr('connect');
+  setAPIStatus(false);
+  showToast('👋 Disconnected from EcoConnect');
+  // Restart probe
+  probeDevice();
+}
+
+function closeExp() { $('expOv').classList.remove('open'); goTab('kiosk'); }
+
+// ── ADMIN ─────────────────────────────────────────────────
+function openAdminLogin() {
+  $('bnav').classList.remove('show');
+  showScr('adminlogin');
+  $('al-user').value = ''; $('al-pass').value = '';
+}
+
+function adminLogin() {
+  const u = $('al-user').value.trim();
+  const p = $('al-pass').value;
+  if (u === CFG.adminUser && p === CFG.adminPass) {
+    S.adminLoggedIn = true;
+    showScr('admin');
+    adminFetchAll();
+    showToast('✅ Admin access granted');
+    // Admin polls more frequently
+    if (pollInt) clearInterval(pollInt);
+    pollInt = setInterval(() => { if(S.adminLoggedIn) adminFetchAll(); }, 5000);
+  } else {
+    showToast('❌ Invalid credentials');
+    $('al-pass').value = '';
+  }
+}
+
+function adminLogout() {
+  S.adminLoggedIn = false;
+  if (pollInt) { clearInterval(pollInt); pollInt = null; }
+  $('al-user').value = ''; $('al-pass').value = '';
+  showScr('adminlogin');
+  showToast('👋 Admin logged out');
+}
+
+function backFromAdmin() {
+  $('bnav').classList.add('show');
+  goTab('home');
+}
+
+// Long-press "About" to open admin
+function attachAdminHold() {
+  const els = document.querySelectorAll('[onclick="showAbout()"]');
+  els.forEach(el => {
+    el.addEventListener('mousedown', () => { holdTimer = setTimeout(openAdminLogin, 1500); });
+    el.addEventListener('mouseup', () => clearTimeout(holdTimer));
+    el.addEventListener('mouseleave', () => clearTimeout(holdTimer));
+    el.addEventListener('touchstart', () => { holdTimer = setTimeout(openAdminLogin, 1500); }, {passive:true});
+    el.addEventListener('touchend', () => clearTimeout(holdTimer));
+  });
+}
+
+// ── BOTTLE / IR LOGIC ─────────────────────────────────────
+function insertBottle() {
+  // In simultaneous mode, don't stop timeout - allow rapid insertion
+  if (!S.simultaneousMode && S.toRunning) stopTO();
+  S.bottles++; S.batch++;
+  updateSlots(); setIR('det');
+  addLog(`🍶 Bottle #${S.bottles} detected`, '+1 IR validated');
+  if (S.batch >= 5) {
+    S.batch = 0; S.mins++;
+    S.sessRemain += 60;
+    updateSlots();
+    showToast('🎉 5 bottles = 1 minute WiFi unlocked!');
+    startSess(); syncUI();
+    // Only start timeout if not in simultaneous mode
+    if (!S.simultaneousMode) startTO();
+  } else {
+    syncUI();
+    // Only start timeout if not in simultaneous mode
+    if (!S.simultaneousMode) startTO();
+  }
+  // Send to device if connected
+  if (!CFG.simulationMode) {
+    fetch(apiUrl('/insert'), { method:'POST', signal: AbortSignal.timeout(2000) }).catch(()=>{});
+  }
+}
+
+function toggleSimultaneousMode() {
+  S.simultaneousMode = !S.simultaneousMode;
+  const btn = $('simultaneous-btn');
+  if (btn) {
+    if (S.simultaneousMode) {
+      btn.textContent = '✅ Simultaneous Mode ON';
+      btn.style.background = 'var(--g2)';
+      showToast('🔄 Simultaneous insertion enabled - Insert bottles rapidly!');
+    } else {
+      btn.textContent = '🔄 Enable Simultaneous Mode';
+      btn.style.background = '';
+      showToast('⏱ Standard mode - 30s timeout per bottle');
+    }
+  }
+}
+
+function startTO() {
+  stopTO(); S.toRemain = 30; S.toRunning = true;
+  setIR('wait'); showCD(true); updateCD();
+  toInt = setInterval(() => {
+    S.toRemain--;
+    updateCD();
+    if (S.toRemain <= 0) { stopTO(); timeoutReset(); }
+  }, 1000);
+}
+
+function stopTO() {
+  if (toInt) { clearInterval(toInt); toInt = null; }
+  S.toRunning = false; showCD(false);
+}
+
+function timeoutReset() {
+  stopTO(); S.batch = 0;
+  // Stop auto-detection if running
+  if (autoDetectInt) {
+    clearInterval(autoDetectInt);
+    autoDetectInt = null;
+    S.autoDetectionMode = false;
+    $('detect-status').style.display = 'none';
+    $('start-detect-btn').style.display = 'flex';
+    setText('start-detect-btn', '🍶 Start Bottle Detection');
+  }
+  updateSlots(); syncUI(); setIR('idle');
+  addLog('⏱ Batch reset', '30s timeout expired');
+  showToast('⏱ Timeout! Batch reset.');
+  setTimeout(() => setIR('ready'), 1400);
+}
+
+function showCD(v) { $('k-cd-wrap').style.display = v ? 'block' : 'none'; }
+
+function updateCD() {
+  const n = S.toRemain;
+  const col = n <= 10 ? 'var(--red)' : 'var(--warn)';
+  setText('k-cd-n', n); if($('k-cd-n')) $('k-cd-n').style.color = col;
+  const circ = $('k-cd-circ');
+  if (circ) { circ.style.strokeDashoffset = 131.9 * (1 - n/30); circ.style.stroke = col; }
+  setText('k-cd-msg', n > 0 ? `Insert next bottle within ${n}s` : 'Time expired!');
+  const hcd = $('h-ir-cd');
+  if (hcd) { hcd.style.display = 'block'; hcd.textContent = n + 's'; }
+}
+
+// ── IR STATE MACHINE ──────────────────────────────────────
+function setIR(state) {
+  const dot=$('h-ir-dot'), n=$('h-ir-n'), d=$('h-ir-d'),
+        tag=$('h-ir-tag'), hcd=$('h-ir-cd'),
+        cent=$('k-center'), emj=$('k-emoji'), lbl=$('k-lbl');
+  dot.className = 'ir-dot';
+  if (cent) cent.className = 'sc-inner';
+  if (state === 'ready' || state === 'idle') {
+    dot.style.background = 'var(--g2)'; dot.classList.add('pulse-g');
+    if(n) n.textContent = 'Awaiting PET bottle';
+    if(d) d.textContent = 'Insert a valid PET bottle into the kiosk';
+    if(tag) { tag.textContent = 'Ready'; tag.className = 'tag tg'; }
+    if(hcd) hcd.style.display = 'none';
+    if(emj) emj.textContent = '🍶';
+    if(lbl) { lbl.textContent = 'INSERT BOTTLE'; lbl.style.color = 'var(--g2)'; }
+  } else if (state === 'det') {
+    dot.style.background = 'var(--g2)'; dot.classList.add('pulse-g');
+    if(cent) cent.classList.add('det');
+    if(n) n.textContent = `✅ PET bottle validated (${S.batch}/5)`;
+    if(d) d.textContent = 'IR confirmed — ESP32 counting...';
+    if(tag) { tag.textContent = 'Detected'; tag.className = 'tag tg'; }
+    if(emj) emj.textContent = '✅';
+    if(lbl) { lbl.textContent = `${S.batch}/5 VALIDATED`; lbl.style.color = 'var(--lime)'; }
+    setTimeout(() => { if(S.batch < 5) setIR('wait'); }, 700);
+  } else if (state === 'wait') {
+    dot.style.background = 'var(--warn)'; dot.classList.add('pulse-o');
+    if(cent) cent.classList.add('det');
+    if(n) n.textContent = `⏳ Next bottle (${S.batch}/5)`;
+    if(d) d.textContent = '30-second insertion window active';
+    if(tag) { tag.textContent = 'Waiting'; tag.className = 'tag to'; }
+    if(emj) emj.textContent = '⏳';
+    if(lbl) { lbl.textContent = `${S.batch}/5 DONE`; lbl.style.color = 'var(--warn)'; }
+  }
+}
+
+// ── SLOTS ─────────────────────────────────────────────────
+function updateSlots() {
+  for (let i = 0; i < 5; i++) {
+    const f = i < S.batch;
+    ['hs','ks'].forEach((pfx, isK) => {
+      const el = $(pfx + i);
+      if (!el) return;
+      if (isK === 0) {
+        el.className = 'slot' + (f ? ' on' : '');
+        el.innerHTML = `<span>${f ? '🍶' : '○'}</span>`;
+      } else {
+        el.className = 'ds' + (f ? ' on' : '');
+        el.textContent = f ? '🍶' : '○';
+      }
+    });
+  }
+}
+
+// ── SESSION TIMER ─────────────────────────────────────────
+function startSess() {
+  if (S.sessActive) return;
+  S.sessActive = true; stopSess();
+  sessInt = setInterval(() => {
+    if (S.sessRemain > 0 && !S.sessionPaused) {
+      S.sessRemain--;
+      updateSessUI();
+      if (S.sessRemain === 20) showToast('⚠️ 20 seconds of WiFi left!');
+      if (S.sessRemain === 0)  expireSess();
+    }
+  }, 1000);
+  updateSessUI();
+}
+
+function startSessFromDevice() { S.sessActive = true; stopSess(); }
+function stopSess() { if(sessInt){clearInterval(sessInt);sessInt=null;} }
+
+function expireSess() {
+  S.sessActive = false; stopSess();
+  $('expOv').classList.add('open');
+  addLog('📴 Session expired','WiFi time ran out');
+}
+
+function updateSessUI() {
+  const m = Math.floor(S.sessRemain/60).toString().padStart(2,'0');
+  const s = (S.sessRemain%60).toString().padStart(2,'0');
+  const str = m + ':' + s;
+  setText('sessTime', str); setText('n-rem', str); setText('ad-s1-rem', str||'–');
+  const chip = $('h-chip'), st = $('sessStatus');
+  const ntag = $('n-sess-tag'), ndot = $('n-dot');
+  const pauseBtn = $('pause-resume-btn');
+  
+  if (S.sessRemain > 0) {
+    if(chip) chip.textContent = S.sessionPaused ? '⏸ Paused' : '🟢 Connected';
+    if(st)   st.textContent = S.sessionPaused ? 'Session paused' : 'WiFi session active';
+    if(ntag) { ntag.textContent = S.sessionPaused ? 'Paused' : 'Active'; ntag.className = S.sessionPaused ? 'tag to' : 'tag tg'; }
+    if(ndot) ndot.style.background = S.sessionPaused ? 'var(--warn)' : 'var(--g2)';
+    if($('sessCard')) $('sessCard').style.boxShadow = S.sessionPaused ? '' : '0 0 20px rgba(34,197,94,.12)';
+    // Show pause button when session is active
+    if(pauseBtn) {
+      pauseBtn.style.display = 'flex';
+      pauseBtn.textContent = S.sessionPaused ? '▶️ Resume Session' : '⏸ Pause Session';
+    }
+  } else {
+    if(chip) chip.textContent = '⚪ Idle';
+    if(st)   st.textContent = 'Insert bottles to start';
+    if(ntag) { ntag.textContent = 'Idle'; ntag.className = 'tag'; ntag.style.cssText='background:rgba(100,100,100,.1);color:var(--muted);'; }
+    if(ndot) ndot.style.background = 'var(--muted)';
+    if($('sessCard')) $('sessCard').style.boxShadow = '';
+    // Hide pause button when session is inactive
+    if(pauseBtn) pauseBtn.style.display = 'none';
+  }
+}
+
+// ── SYNC ALL UI ───────────────────────────────────────────
+function syncUI() {
+  const co2 = (S.bottles * 1.5).toFixed(1);
+  $('h-batch').innerHTML = S.batch + ' <span style="font-size:11px;color:var(--muted);font-weight:400;">/ 5</span>';
+  setText('h-mins', S.mins); setText('h-total-bot', S.bottles);
+  setText('h-s-bot', S.bottles); setText('h-s-min', S.mins); setText('h-s-co2', co2);
+  setText('k-bn', S.batch); setText('k-mins', S.mins);
+  setText('n-bot-used', S.bottles);
+  setText('p-bot', S.bottles); setText('p-mins', S.mins); setText('p-co2', co2);
+  // Admin syncs
+  if (S.adminLoggedIn) {
+    S.totalBottles = S.bottles; S.totalMins = S.mins;
+  }
+}
+
+// ── ACTIVITY LOG ──────────────────────────────────────────
+function addLog(title, detail) {
+  const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  S.log.unshift({title,detail,t});
+  if (S.log.length > 15) S.log.pop();
+  const el = $('p-actlog');
+  if (!el) return;
+  el.innerHTML = S.log.length === 0
+    ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:14px;">No activity yet.</div>'
+    : S.log.map(a => `
+      <div style="background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);
+        padding:9px 12px;display:flex;gap:8px;align-items:center;margin-bottom:5px;animation:fadeSlide .2s ease;">
+        <div style="width:30px;height:30px;border-radius:8px;background:rgba(34,197,94,.09);
+          display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">📋</div>
+        <div style="flex:1;">
+          <div style="font-size:11px;font-weight:600;color:var(--txt);">${a.title}</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px;">${a.detail} · ${a.t}</div>
+        </div>
+      </div>`).join('');
+}
+
+// ── ADMIN SESSION LOG ─────────────────────────────────────
+function renderAdminSessions() {
+  const el = $('ad-sessions'); if (!el) return;
+  const myEntry = {
+    name: 'My Device', status: S.sessActive ? 'active' : 'idle',
+    mins: S.mins, bots: S.bottles,
+    rem: S.sessRemain > 0 ? Math.floor(S.sessRemain/60).toString().padStart(2,'0') + ':' + (S.sessRemain%60).toString().padStart(2,'0') : '00:00'
+  };
+  const all = [myEntry, ...S.sessionLog];
+  el.innerHTML = all.map(s => `
+    <div class="at-item">
+      <div class="at-dot ${s.status==='active'?'don':'doff'}"></div>
+      <div class="at-inf">
+        <div class="at-n">${s.name}</div>
+        <div class="at-d">${s.status==='active'?'Active now':'Ended '+(s.ago||'')} · ${s.bots} bottles</div>
+      </div>
+      <div class="at-r">
+        <div class="at-t">${s.mins} min</div>
+        <div class="at-b">${s.status==='active'?('rem: '+(s.rem||'–')):'completed'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAlerts(binLevel) {
+  const el = $('ad-alerts'); if (!el) return;
+  const alerts = [];
+  if (binLevel >= 75) alerts.push({ type:'warn', icon:'⚠️', n:'Bin Capacity Warning', d:`Hub_01 bin at ${binLevel}% — schedule collection soon.` });
+  if (!S.deviceOnline && !CFG.simulationMode) alerts.push({ type:'red', icon:'🔴', n:'Device Offline', d:'ESP32 not responding. Check power and WiFi connection.' });
+  alerts.push({ type:'blue', icon:'ℹ️', n:'IR Calibration', d:'Last calibrated 3 days ago. Recommended every 7 days.' });
+  el.innerHTML = alerts.map(a => {
+    const cols = {warn:'rgba(217,119,6,.06)|rgba(217,119,6,.18)|var(--warn)', red:'rgba(220,38,38,.06)|rgba(220,38,38,.18)|var(--red)', blue:'rgba(14,165,233,.06)|rgba(14,165,233,.18)|var(--blue)'};
+    const [bg,bd,co] = (cols[a.type]||cols.blue).split('|');
+    return `<div class="alert-bx" style="background:${bg};border:1px solid ${bd};">
+      <div style="font-size:15px;flex-shrink:0;">${a.icon}</div>
+      <div><div class="alert-n" style="color:${co};">${a.n}</div><div class="alert-d">${a.d}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── API CONFIG ────────────────────────────────────────────
+function configAPI() {
+  const modal = $('apiModal');
+  $('api-ip-input').value = CFG.apiBase.replace('http://','');
+  $('api-port-input').value = CFG.apiPort;
+  modal.classList.add('open');
+}
+
+function saveAPIConfig() {
+  const ip = $('api-ip-input').value.trim();
+  const port = $('api-port-input').value.trim() || '80';
+  if (!ip) { showToast('⚠️ Enter a valid IP'); return; }
+  CFG.apiBase = 'http://' + ip;
+  CFG.apiPort = port;
+  localStorage.setItem('eco_api_base', CFG.apiBase);
+  localStorage.setItem('eco_api_port', CFG.apiPort);
+  setText('conn-ip', ip); setText('conn-api-url', ip);
+  setText('n-ip', ip); setText('p-api-url', `ESP32 IP: ${ip}:${port}`);
+  CFG.simulationMode = false;
+  closeApiModal();
+  probeDevice();
+  showToast('✅ Config saved — probing device...');
+}
+
+function closeApiModal() { $('apiModal').classList.remove('open'); }
+
+// ── CHARTS ────────────────────────────────────────────────
+function buildChart(bId, lId, vals, days, col) {
+  const bEl=$(bId), lEl=$(lId); if(!bEl) return;
+  const max = Math.max(...vals);
+  bEl.innerHTML = vals.map((v,i) =>
+    `<div class="bar" style="height:${Math.round(v/max*100)}%;background:${i===6?col:'rgba(34,197,94,.2)'}"></div>`
+  ).join('');
+  lEl.innerHTML = days.map(d => `<div class="blbl">${d}</div>`).join('');
+}
+
+// ── LIVE SPEED (user-facing) ──────────────────────────────
+function liveSpeed() {
+  setInterval(() => {
+    const dl = (15 + Math.random()*18).toFixed(1);
+    const ul = (4 + Math.random()*9).toFixed(1);
+    setText('n-dl', dl + ' Mbps');
+    setText('n-ul', ul + ' Mbps');
+    const db=$('n-dlb'); if(db) db.style.width=(dl/50*100).toFixed(0)+'%';
+    const ub=$('n-ulb'); if(ub) ub.style.width=(ul/20*100).toFixed(0)+'%';
+  }, 2500);
+}
+
+// ── CSV EXPORT ────────────────────────────────────────────
+function exportCSV() {
+  const rows = [
+    ['Device','Status','Bottles','Minutes','Timestamp'],
+    ['My Device', S.sessActive?'active':'idle', S.bottles, S.mins, new Date().toISOString()],
+    ['Device_B4F2','ended',20,4,''],
+    ['maria_santos','ended',40,8,'']
+  ];
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ecoconnect_sessions.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('⬇️ CSV exported!');
+}
+
+// ── ISO 25010 ─────────────────────────────────────────────
+const ISO = [
+  {ic:'⚙️',n:'Functionality',d:'IR detection, bottle counting, WiFi control'},
+  {ic:'🔒',n:'Reliability',d:'30s timeout logic, auto session expiry'},
+  {ic:'📦',n:'Portability',d:'ESP32 kiosk — barangay deployable'},
+  {ic:'🖐',n:'Usability',d:'Auto-connect, no login needed'},
+  {ic:'⚡',n:'Efficiency',d:'5-bottle-per-minute conversion'},
+  {ic:'🔐',n:'Security',d:'Admin-restricted, session isolation'},
+  {ic:'🔗',n:'Compatibility',d:'Any ISP (fiber or 5G modem)'},
+  {ic:'🛠',n:'Maintainability',d:'Modular ESP32 firmware, REST API'},
+];
+function buildISO() {
+  const el = $('iso-list'); if(!el) return;
+  el.innerHTML = ISO.map(i => `
+    <div class="iso-row">
+      <div style="font-size:13px;">${i.ic}</div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--txt);">${i.n}</div>
+      <div style="font-size:9px;color:var(--muted);line-height:1.4;">${i.d}</div></div>
+    </div>`).join('');
+}
+
+// ── IBM CSUQ ──────────────────────────────────────────────
+const CSUQ = [
+  'Overall, I am satisfied with EcoConnect.',
+  'The system was easy to use.',
+  'I could effectively earn WiFi time with bottles.',
+  'I felt comfortable using the kiosk.',
+  'It was easy to learn how EcoConnect works.',
+];
+const ratings = {};
+function buildCSUQ() {
+  const el = $('csuq-items'); if(!el) return;
+  el.innerHTML = CSUQ.map((q,i) => {
+    ratings[i] = 0;
+    return `<div class="cq-item">
+      <div class="cq-q">${i+1}. ${q}</div>
+      <div class="cq-btns">
+        ${[1,2,3,4,5].map(v => `<div class="cq-btn" id="cq-${i}-${v}" onclick="rate(${i},${v})">${v}</div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function rate(qi, val) {
+  ratings[qi] = val;
+  for (let v = 1; v <= 5; v++) {
+    const b = $(`cq-${qi}-${v}`);
+    if (b) {
+      b.style.background = v<=val ? 'rgba(34,197,94,.15)' : 'transparent';
+      b.style.borderColor = v<=val ? 'rgba(34,197,94,.4)' : 'var(--bdr)';
+      b.style.color = v<=val ? 'var(--g2)' : 'var(--muted)';
+    }
+  }
+}
+function submitCSUQ() {
+  const vals = Object.values(ratings);
+  if (vals.filter(v=>v>0).length < CSUQ.length) { showToast(`⚠️ Rate all ${CSUQ.length} questions`); return; }
+  const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+  showToast(`✅ Feedback submitted! Avg: ${avg}/5`);
+  addLog('📋 IBM CSUQ submitted', `Avg: ${avg}/5`);
+}
+
+// ── MODALS & UTILS ────────────────────────────────────────
+function showAbout() { $('aboutModal').classList.add('open'); }
+['apiModal','aboutModal'].forEach(id => {
+  const el = $(id);
+  if(el) el.addEventListener('click', e => { if(e.target.id===id) el.classList.remove('open'); });
+});
+
+let _tTO;
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(_tTO); _tTO = setTimeout(() => t.classList.remove('show'), 2700);
+}
+
+// Populate API IP display on load
+document.addEventListener('DOMContentLoaded', () => {
+  const ip = CFG.apiBase.replace('http://','');
+  setText('conn-ip', ip); setText('conn-api-url', ip);
+  setText('n-ip', ip + ':' + CFG.apiPort);
+  setText('p-api-url', 'ESP32 IP: ' + ip);
+});
+
+function startAutoDetection() {
+  $('start-detect-btn').style.display = 'none';
+  $('detect-status').style.display = 'block';
+  S.autoDetectionMode = true;
+  S.batch = 0;
+  updateSlots();
+  setText('detect-msg', '🔍 IR Sensor Active - Insert bottles...');
+  setText('k-lbl', 'DETECTING');
+  $('k-center').classList.add('det');
+  let detectedCount = 0;
+  autoDetectInt = setInterval(() => {
+    if (detectedCount >= 5) {
+      clearInterval(autoDetectInt);
+      autoDetectInt = null;
+      S.autoDetectionMode = false;
+      $('detect-status').style.display = 'none';
+      $('start-detect-btn').style.display = 'flex';
+      setText('start-detect-btn', '🍶 Start Bottle Detection');
+      return;
+    }
+    detectedCount++;
+    S.bottles++;
+    S.batch++;
+    updateSlots();
+    setIR('det');
+    addLog(`🍶 Bottle #${S.bottles} detected (auto)`, '+1 IR validated');
+    setText('detect-progress', `Detected: ${detectedCount}/5`);
+    setText('k-bn', S.batch);
+    setText('k-mins', Math.floor(S.bottles / 5));
+    if (S.batch >= 5) {
+      S.batch = 0;
+      S.mins++;
+      S.sessRemain += 60;
+      updateSlots();
+      setText('detect-msg', '✅ Batch complete! Starting session...');
+      showToast('🎉 5 bottles = 1 minute WiFi unlocked!');
+      startSess();
+      syncUI();
+      setTimeout(() => {
+        if (S.autoDetectionMode) {
+          setText('detect-msg', '🔍 IR Sensor Active - Insert bottles...');
+          setText('k-lbl', 'DETECTING');
+          detectedCount = 0;
+          setText('detect-progress', 'Detected: 0/5');
+        }
+      }, 2000);
+    } else {
+      syncUI();
+    }
+  }, 2000);
+}
+
+function togglePauseResume() {
+  const btn = $('pause-resume-btn');
+  if (S.sessionPaused) {
+    // Resume session
+    S.sessionPaused = false;
+    btn.textContent = '⏸ Pause Session';
+    showToast('▶️ Session resumed');
+    addLog('▶️ Session resumed', 'Timer restarted');
+  } else {
+    // Pause session
+    S.sessionPaused = true;
+    btn.textContent = '▶️ Resume Session';
+    showToast('⏸ Session paused');
+    addLog('⏸ Session paused', 'Timer stopped');
+  }
+  updateSessUI();
+}
+</script>
+</body>
+</html>
