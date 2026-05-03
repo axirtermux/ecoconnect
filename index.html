@@ -1427,19 +1427,29 @@ function insertBottle() {
     return;
   }
 
-  S.bottles++; S.batch++;
-  updateSlots(); setIR('det');
-  addLog(`🍶 Bottle #${S.bottles} detected`, '+1 IR validated');
+  // Simulate inserting 15-20 bottles at once
+  const bottlesToInsert = Math.floor(Math.random() * 6) + 15; // Random between 15-20
+  const previousBottles = S.bottles;
+  const previousBatch = S.batch;
 
-  if (S.batch >= 5) {
-    S.batch = 0; S.mins++;
-    S.sessRemain += 60;
-    updateSlots();
-    showToast('🎉 5 bottles = 1 minute WiFi unlocked!');
-    startSess(); syncUI();
-  } else {
-    syncUI();
+  S.bottles += bottlesToInsert;
+  S.batch += bottlesToInsert;
+
+  // Calculate how many complete batches of 5 were completed
+  const completedBatches = Math.floor(S.batch / 5);
+  const minutesEarned = completedBatches;
+  S.batch = S.batch % 5; // Remaining bottles in current batch
+  S.mins += minutesEarned;
+  S.sessRemain += (minutesEarned * 60);
+
+  updateSlots(); setIR('det');
+  addLog(`🍶 ${bottlesToInsert} bottles detected`, `+${bottlesToInsert} IR validated`);
+  showToast(`✅ ${bottlesToInsert} bottles inserted! +${minutesEarned} min WiFi`);
+
+  if (minutesEarned > 0) {
+    startSess();
   }
+  syncUI();
 
   // Send to device if connected
   if (!CFG.simulationMode) {
